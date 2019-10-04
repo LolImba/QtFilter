@@ -13,12 +13,12 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->KernelRadiusBox->setValue(Settings::kernelRadius);
-    int index = 0;
-    if(Settings::filter == Settings::Filters::Gaus)
-        index = 1;
-    else if (Settings::filter == Settings::Filters::Sobel)
-        index = 2;
-    ui->FilterBox->setCurrentIndex(index);
+//    int index = 0;
+//    if(Settings::filter == Settings::Filters::Gaus)
+//        index = 1;
+//    else if (Settings::filter == Settings::Filters::Sobel)
+//        index = 2;
+ //   ui->FilterBox->setCurrentIndex(index);
 }
 
 SettingsDialog::~SettingsDialog()
@@ -30,22 +30,22 @@ void SettingsDialog::on_Ok_button_clicked()
 {
     Settings::kernelRadius = ui->KernelRadiusBox->value();
     //auto selectedFilter = ui->comboBox->itemData(ui->comboBox->currentIndex()).toString();
-    switch (ui->FilterBox->currentIndex()) {
-    case 0:{
-        Settings::filter = Settings::Filters::None;
-        break;
-    }
-    case 1:{
-        Settings::filter = Settings::Filters::Gaus;
-        break;
-    }
-    case 2:{
-        Settings::filter = Settings::Filters::Sobel;
-        break;
-    }
-    default:
-        Settings::filter = Settings::Filters::None;
-    }
+//    switch (ui->FilterBox->currentIndex()) {
+//    case 0:{
+//        Settings::filter = Settings::Filters::None;
+//        break;
+//    }
+//    case 1:{
+//        Settings::filter = Settings::Filters::Gaus;
+//        break;
+//    }
+//    case 2:{
+//        Settings::filter = Settings::Filters::Sobel;
+//        break;
+//    }
+//    default:
+//        Settings::filter = Settings::Filters::None;
+//    }
     this->close();
 }
 

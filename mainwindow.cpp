@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     vsurface = new myQAbstractVideoSurface();
     vsurface->setLocationForImage(*ui->lblActual);
     mplayer->setVideoOutput(vsurface);
+    state = LabelState::Nothing;
   //  mplayer->setVideoOutput(vw);
     //this->setCentralWidget(vsurface);
 }
@@ -109,42 +110,34 @@ void MainWindow::on_actionPlay_triggered()
 {
     //emit fnClearPixmap();
     mplayer->setMuted(true);
-    mplayer->play();
+    if(!mplayer->media().isNull())
+        mplayer->play();
 }
 
-void MainWindow::on_actionOpen_video_triggered()
-{
-    QFileDialog fd;
-    fd.show();
-    fd.exec();
-    QString strFileName = fd.selectedFiles().at(0);
-   // vsurface = new myQAbstractVideoSurface();
-   // mplayer->setVideoOutput(vsurface);
+//void MainWindow::on_actionOpen_video_triggered()
+//{
+//    QFileDialog fd;
+//    fd.show();
+//    fd.exec();
+//    QString strFileName = fd.selectedFiles().at(0);
+//    connect(vsurface, SIGNAL(signalFrameChanged(QPixmap)),
+//            this, SLOT(onFrameChanged(QPixmap)));
 
-//    connect(vsurface, SIGNAL(fnSurfaceStopped(QPixmap)),
-//            this, SLOT(onMediaPlayerStop(QPixmap)),Qt::QueuedConnection);
-    connect(vsurface, SIGNAL(signalFrameChanged(QPixmap)),
-            this, SLOT(onFrameChanged(QPixmap)));
-
-//    connect(mplayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
-//            this, SLOT(onMediaStateChanged(QMediaPlayer::MediaStatus)));
-
-//    connect(this, SIGNAL(fnClearPixmap()),
-//            vsurface, SLOT(fnClearPixmap()),Qt::QueuedConnection);
-
-    mplayer->setMedia(QUrl::fromLocalFile(strFileName));
-}
+//    mplayer->setMedia(QUrl::fromLocalFile(strFileName));
+//    state = LabelState::Video;
+//}
 
 void MainWindow::on_actionPause_triggered()
 {
-    mplayer->pause();
+    if(!mplayer->media().isNull())
+        mplayer->pause();
 }
 
-void MainWindow::on_actionFilter_Settings_triggered()
-{
-    SettingsDialog* settings = new SettingsDialog(this);
-    settings->show();
-}
+//void MainWindow::on_actionFilter_Settings_triggered()
+//{
+//    SettingsDialog* settings = new SettingsDialog(this);
+//    settings->show();
+//}
 
 QSqlDatabase& MainWindow::getDb()
 {
@@ -161,26 +154,92 @@ void MainWindow::on_actionOpen_triggered()
     QPixmap curImage;
     curImage.load(strFileName);
     ui->lblActual->setPixmap(curImage);
+    state = LabelState::Image;
 }
 
-void MainWindow::on_actionUse_filter_triggered()
-{
-    FilterAlgorithms algorithm;
-    auto img = ui->lblActual->pixmap()->toImage();
+//void MainWindow::on_actionUse_filter_triggered()
+//{
+//    FilterAlgorithms algorithm;
+//    auto img = ui->lblActual->pixmap()->toImage();
 
-    switch (Settings::filter) {
-    case Settings::Filters::None:{
-        ui->lblActual->setPixmap(QPixmap::fromImage(img));
-        break;
-    }
-    case Settings::Filters::Gaus:{
+//    switch (Settings::filter) {
+//    case Settings::Filters::None:{
+//        ui->lblActual->setPixmap(QPixmap::fromImage(img));
+//        break;
+//    }
+//    case Settings::Filters::Gaus:{
+//        ui->lblActual->setPixmap(QPixmap::fromImage(algorithm.setUpBlurAlgorithm(img)));
+//        break;
+//    }
+//    case Settings::Filters::Sobel:{
+//        ui->lblActual->setPixmap(QPixmap::fromImage(algorithm.setUpSobelAlgorithm(img)));
+//        break;
+//    }
+//    }
+//    //ui->lblActual->setPixmap(QPixmap::fromImage(algorithm.setUpSobelAlgorithm(img)));
+//}
+
+void MainWindow::on_PlayButton_clicked()
+{
+    on_actionPlay_triggered();
+}
+
+void MainWindow::on_StopButton_clicked()
+{
+    on_actionPause_triggered();
+}
+
+void MainWindow::on_actionGaus_triggered()
+{
+    switch (state) {
+    case LabelState::Nothing:{ return; }
+    case LabelState::Image:{
+        FilterAlgorithms algorithm;
+        auto img = ui->lblActual->pixmap()->toImage();
         ui->lblActual->setPixmap(QPixmap::fromImage(algorithm.setUpBlurAlgorithm(img)));
-        break;
+        return;
     }
-    case Settings::Filters::Sobel:{
+    case LabelState::Video:{
+        Settings::filter = Settings::Filters::Gaus;
+        on_actionPlay_triggered();
+        return;
+    }
+    }
+}
+
+void MainWindow::on_actionSettings_triggered()
+{
+    SettingsDialog* settings = new SettingsDialog(this);
+    settings->show();
+}
+
+void MainWindow::on_actionSobel_triggered()
+{
+    switch (state) {
+    case LabelState::Nothing:{ return; }
+    case LabelState::Image:{
+        FilterAlgorithms algorithm;
+        auto img = ui->lblActual->pixmap()->toImage();
         ui->lblActual->setPixmap(QPixmap::fromImage(algorithm.setUpSobelAlgorithm(img)));
-        break;
+        return;
+    }
+    case LabelState::Video:{
+        Settings::filter = Settings::Filters::Sobel;
+        on_actionPlay_triggered();
+        return;
     }
     }
-    //ui->lblActual->setPixmap(QPixmap::fromImage(algorithm.setUpSobelAlgorithm(img)));
+}
+
+void MainWindow::on_actionOpen_Video_triggered()
+{
+    QFileDialog fd;
+    fd.show();
+    fd.exec();
+    QString strFileName = fd.selectedFiles().at(0);
+    connect(vsurface, SIGNAL(signalFrameChanged(QPixmap)),
+            this, SLOT(onFrameChanged(QPixmap)));
+
+    mplayer->setMedia(QUrl::fromLocalFile(strFileName));
+    state = LabelState::Video;
 }

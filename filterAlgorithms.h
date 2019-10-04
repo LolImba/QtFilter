@@ -20,6 +20,7 @@ private:
     double* kernel;
     QRgb getBlurPixelColor(int kernelRadius, int pixelI, int pixelJ, bool lineMode);
     QRgb **pixels;
+    void checkForOverflow(int& pixelColor);
 };
 
 #endif // GAUSBLURALGORITHM_H
